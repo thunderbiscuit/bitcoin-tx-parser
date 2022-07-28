@@ -1,11 +1,15 @@
 package me.thunderbiscuit
 
 import com.google.common.io.BaseEncoding
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.spec.ECParameterSpec
+import org.bouncycastle.math.ec.ECPoint
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.security.Signature
 
-fun doubleHashSha256(message: String): ByteArray {
-    val firstHash: ByteArray = MessageDigest.getInstance("SHA-256").digest(message.toByteArray())
+fun doubleHashSha256(message: ByteArray): ByteArray {
+    val firstHash: ByteArray = MessageDigest.getInstance("SHA-256").digest(message)
     val secondHash: ByteArray = MessageDigest.getInstance("SHA-256").digest(firstHash)
     return secondHash
 }
@@ -17,6 +21,67 @@ fun ByteArray.toHex(): String {
 // a hex in string format
 fun String.toByteArray(): ByteArray {
     return BaseEncoding.base16().decode(this.uppercase())
+}
+
+fun verifySignature(
+    messageDigest: ByteArray,
+    rawPubkey: ByteArray,
+    signature: ByteArray,
+    print: String,
+): Boolean {
+    // if (rawPubkey[0] != 4.toByte()) throw Exception("We're not able to parse compressed public keys yet!")
+    println("verifySignature data: ${signature.toHex()}")
+
+    if (rawPubkey[0] != 4.toByte()) {
+        val uncompressedPubkeyCoordinates = uncompressECPoint(rawPubkey)
+        val pubKey = PubKey(
+            x = BigInteger(uncompressedPubkeyCoordinates.x),
+            y = BigInteger(uncompressedPubkeyCoordinates.y),
+        )
+        val standardPublicKey = pubKey.pubKey
+        val ecdsaVerify = Signature.getInstance("NONEwithECDSA")
+        ecdsaVerify.initVerify(standardPublicKey)
+
+        // maybe needs to be reversed?
+        // ecdsaVerify.update(messageDigest.reversedArray())
+        ecdsaVerify.update(messageDigest)
+
+        val result: Boolean = ecdsaVerify.verify(signature)
+        println("$print $result")
+        return result
+
+    } else {
+        val pubKey: PubKey = PubKey(
+            x = BigInteger(rawPubkey.copyOfRange(1, 33)),
+            y = BigInteger(rawPubkey.copyOfRange(33, 65))
+        )
+        val standardPublicKey = pubKey.pubKey
+        val ecdsaVerify = Signature.getInstance("NONEwithECDSA")
+        ecdsaVerify.initVerify(standardPublicKey)
+        // maybe needs to be reversed?
+        // ecdsaVerify.update(messageDigest.reversedArray())
+        ecdsaVerify.update(messageDigest)
+
+        val result: Boolean = ecdsaVerify.verify(signature)
+        println("$print $result")
+        return result
+    }
+
+    // val standardPublicKey = pubKey.pubKey
+    // val ecdsaVerify = Signature.getInstance("NONEwithECDSA")
+    // ecdsaVerify.initVerify(standardPublicKey)
+    // ecdsaVerify.update(messageDigest)
+    //
+    // return ecdsaVerify.verify(signature)
+}
+
+// https://bitcoin.stackexchange.com/questions/44024/get-uncompressed-public-key-from-compressed-form
+fun uncompressECPoint(compressedPubKey: ByteArray): PointCoordinates {
+    val spec: ECParameterSpec = ECNamedCurveTable.getParameterSpec("secp256k1")
+    val point: ECPoint = spec.curve.decodePoint(compressedPubKey)
+    val x: ByteArray = point.xCoord.encoded
+    val y: ByteArray = point.yCoord.encoded
+    return PointCoordinates(x, y)
 }
 
 // known bug: because of the way we handle the parsing of the inputs and outputs
@@ -49,3 +114,5 @@ class VarInt(firstByte: Byte, fullNineBytes: ByteArray) {
         }
     }
 }
+
+data class PointCoordinates(val x: ByteArray, val y: ByteArray)

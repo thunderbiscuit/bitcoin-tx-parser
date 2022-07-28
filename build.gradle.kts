@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.71")
     implementation("com.google.guava:guava:31.1-jre")
     testImplementation(kotlin("test"))
 }

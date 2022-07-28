@@ -6,7 +6,7 @@ import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.*
 
-class PubKeySB(val x: BigInteger, val y: BigInteger) {
+class PubKey(val x: BigInteger, val y: BigInteger) {
 
     private val keySpec: ECPublicKeySpec
     val pubKey: PublicKey

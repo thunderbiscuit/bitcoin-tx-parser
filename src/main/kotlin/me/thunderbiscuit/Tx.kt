@@ -4,7 +4,7 @@ import java.math.BigInteger
 
 class Tx(hex: String) {
     private val rawTx: ByteArray = hex.toByteArray()
-    val txid: String = doubleHashSha256(rawTx.toHex()).reversedArray().toHex()
+    val txid: String = doubleHashSha256(rawTx).reversedArray().toHex()
     val txSize: Int = rawTx.size
     private val varintByteForInputs: Int = 4
     private var varintByteForOutputs: Int? = null
@@ -40,6 +40,7 @@ class Tx(hex: String) {
             val voutEnd = txidEnd + 4
 
             val varInt = VarInt(rawTx[inputsStartByte[i]!! + 36], rawTx.copyOfRange(inputsStartByte[i]!! + 36, inputsStartByte[i]!! + 44))
+            println("Length of scriptSig for input $i: ${varInt.value}")
 
             val scriptSigStart = voutEnd + varInt.length
             val scriptSigEnd = scriptSigStart + varInt.value
@@ -153,8 +154,118 @@ class Tx(hex: String) {
             "Locktime field: 0x${bytes.toHex()}, spendable as per Unix timestamp $value"
         }
     }
+
+    fun validateTransaction(): Boolean {
+        val inputsScriptPubkeys: MutableMap<Int, ByteArray> = mutableMapOf()
+        // for (i: Int in 0 until numInputs) {
+        //     inputsScriptPubkeys[i] = getInputScriptPubkey(inputs[i].outPoint)
+        // }
+
+        for (i: Int in 0 until numInputs) {
+            println("Validating input $i")
+            // only parses P2PKH
+            val scriptSigData = parseScriptSig(inputs[i].scriptSig.toByteArray())
+            println("ScriptSig pubkey is ${scriptSigData.pubkey.toHex()}")
+            // if (scriptSigData.pubkey.size < 63) throw Exception("Currently unable to parse compressed public keys")
+
+            val dataToRemoveStart: Int = 4 + inputsVarint.length + 32 + 4
+            val varInt = VarInt(rawTx[dataToRemoveStart], rawTx.copyOfRange(dataToRemoveStart, dataToRemoveStart + 9))
+            val dataToRemoveEnd: Int = dataToRemoveStart + varInt.length + varInt.value
+
+            // signature validation requires a message and a pubkey
+            val message: ByteArray = generateMessage(
+                dataToRemoveStart = dataToRemoveStart,
+                dataToRemoveEnd = dataToRemoveEnd,
+                sigHash = scriptSigData.sigHash,
+                scriptPubKey = scriptSigData.pubkey
+            )
+            val messageDigest: ByteArray = doubleHashSha256(message)
+            verifySignature(
+                messageDigest = messageDigest,
+                rawPubkey = scriptSigData.pubkey,
+                signature = scriptSigData.signature,
+                print = "Signature on input $i for $txid is"
+            )
+        }
+
+        println(inputsScriptPubkeys[0]?.toHex())
+        return true
+    }
+
+    private fun generateMessage(
+        dataToRemoveStart: Int,
+        dataToRemoveEnd: Int,
+        sigHash: SigHash,
+        scriptPubKey: ByteArray
+    ): ByteArray {
+        val tx: ByteArray = rawTx
+        // Step 1: remove the scriptSig, including the varint that specifies the length of the scriptSig
+        // Step 2: replace it with the scriptPubkey in the parent tx
+        // Step 3: append sighash value in 8 bytes
+        val piece1: ByteArray = tx.copyOfRange(0, dataToRemoveStart)
+        val piece2: ByteArray = tx.copyOfRange(dataToRemoveEnd, tx.size)
+        val scriptPubKeyFromParent = "1976a9147b1b3760657d2919b2509acd653533efb847f3dd88ac".toByteArray()
+        // val scriptPubKeyFromParent = "76a9147b1b3760657d2919b2509acd653533efb847f3dd88ac".toByteArray().reversedArray()
+        val fullMessage: ByteArray = piece1 + scriptPubKeyFromParent + piece2 + sigHashTo4Bytes(sigHash)
+        println("The message hashed and passed to the signature verification is ${fullMessage.toHex()}")
+        return fullMessage
+    }
+
+    // this method only works when attempting to parse P2PKH ScriptSigs
+    private fun parseScriptSig(rawScriptSig: ByteArray): ScriptSig {
+        println("ScriptSig is ${rawScriptSig.toHex()}")
+        // P2PKH scriptSig is <sig> <pubKey>
+        val sigOpCodeByteIndex: Int = 0
+        val sigOpCode: OpCode = parseOpCode(rawScriptSig[sigOpCodeByteIndex])
+        val pubkeyOpCodeByteIndex: Int = if (sigOpCode is PushBytes) sigOpCode.numBytes + 1 else throw Exception("The first opcode was not PUSH_BYTES!")
+        val pubkeyOpCode: OpCode = parseOpCode(rawScriptSig[pubkeyOpCodeByteIndex])
+
+        val signatureWithSigHash: ByteArray = getRawSignature(sigOpCode, rawScriptSig)
+        val signature: ByteArray = signatureWithSigHash.copyOfRange(0, signatureWithSigHash.size - 1)
+        val rawPubkey: ByteArray = getRawPubkey(
+            opCode = pubkeyOpCode,
+            startByteIndex = pubkeyOpCodeByteIndex + 1,
+            rawScriptSig = rawScriptSig
+        )
+
+        val sigHashByte: Byte = signatureWithSigHash.last()
+        val sigHash: SigHash = parseSigHashByte(sigHashByte)
+        // println("SigHash type is ${parseSigHashByte(sigHash)}")
+
+        val scriptSig: ScriptSig = ScriptSig(signature, sigHash, rawPubkey)
+        println("ScriptSig: $scriptSig")
+        return scriptSig
+    }
+
+    private fun getRawPubkey(opCode: OpCode, startByteIndex: Int, rawScriptSig: ByteArray): ByteArray {
+        println("getRawPubkey data: $opCode, $startByteIndex, ${rawScriptSig.size}")
+        if (opCode is PushBytes) {
+            // we need to add 1 to those calculations to account for the OpCode byte
+            return rawScriptSig.copyOfRange(startByteIndex, startByteIndex + opCode.numBytes)
+        } else {
+            throw Exception("Script probably not P2PKH!")
+        }
+    }
+
+    private fun getRawSignature(opCode: OpCode, rawScriptSig: ByteArray): ByteArray {
+        if (opCode is PushBytes) {
+            // we need to add 1 to those calculations to account for the OpCode byte
+            return rawScriptSig.copyOfRange(1, opCode.numBytes + 1)
+        } else {
+            throw Exception("Script probably not P2PKH!")
+        }
+    }
+
+    private fun getInputScriptPubkey(outPoint: OutPoint): ByteArray {
+        // query blockstream API to get full hex of parent transaction
+
+        val parentTx: Tx = Tx(hexTx4Parent)
+        val scriptPubkey: ByteArray = parentTx.outputs[outPoint.vout].scriptPubkey.toByteArray()
+        return scriptPubkey
+    }
 }
 
 data class Input(val outPoint: OutPoint, val scriptSig: String, val sequence: String)
 data class OutPoint(val txid: String, val vout: Int)
 data class Output(val amount: Long, val scriptPubkey: String)
+data class ScriptSig(val signature: ByteArray, val sigHash: SigHash, val pubkey: ByteArray)
