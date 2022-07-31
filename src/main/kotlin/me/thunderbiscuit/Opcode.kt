@@ -1,19 +1,17 @@
 package me.thunderbiscuit
 
-fun parseOpCode(byte: Byte): OpCode {
+fun parseOpCode(byte: Byte): Opcode {
     println("Parsing OpCode: ${byte.toInt()}")
     return when (byte) {
-        71.toByte() -> PushBytes(71)
-        33.toByte() -> PushBytes(33)
-        118.toByte() -> StandardOpCode.OP_DUP
-        else -> throw IllegalStateException("OpCode not enabled yet")
+        71.toByte()  -> Opcode.PushBytes(71)
+        33.toByte()  -> Opcode.PushBytes(33)
+        118.toByte() -> Opcode.OP_DUP()
+        else -> throw IllegalStateException("OpCode ${byte.toInt()} not enabled yet")
     }
 }
 
-interface OpCode
-
-enum class StandardOpCode: OpCode {
-    OP_DUP
+sealed class Opcode() {
+    class PushBytes(val numBytes: Int): Opcode()
+    class OP_DUP: Opcode()
+    class OP_HASH160(val bytes: ByteArray): Opcode()
 }
-
-data class PushBytes(val numBytes: Int): OpCode

@@ -3,15 +3,13 @@ package me.thunderbiscuit
 // A transaction has the following fields:
 // 1. version
 // 2. inputs list
-//   2.a all input bytes
-//   2.b outpoint txid
-//   2.c outpoint input number
-//   2.d scriptSig
-//   2.e sequence
+//   2.a outpoint txid
+//   2.b outpoint input number
+//   2.c scriptSig
+//   2.d sequence
 // 3. outputs list
-//   3.a all output bytes
-//   3.b amount
-//   3.c scriptPubkey
+//   3.a amount
+//   3.b scriptPubKey
 // 4. locktime
 
 // the txParser() should return a TxDataStructure
@@ -42,7 +40,9 @@ fun txParser(rawTx: ByteArray): TxDataStructure {
     return TxDataStructure(
         rawTx = TxElement.FullTx(rawTx),
         version = TxElement.Version(versionBytes),
+        numInputsVarInt = TxElement.NumInputsVarint(inputVarint.raw),
         inputs = inputs,
+        numOutputsVarInt = TxElement.NumOutputsVarint(outputVarint.raw),
         outputs = outputs,
         locktime = TxElement.Locktime(locktimeBytes)
     )
@@ -51,27 +51,18 @@ fun txParser(rawTx: ByteArray): TxDataStructure {
 class TxDataStructure(
     val rawTx: TxElement.FullTx,
     val version: TxElement.Version,
+    val numInputsVarInt: TxElement.NumInputsVarint,
     val inputs: List<InputData>,
+    val numOutputsVarInt: TxElement.NumOutputsVarint,
     val outputs: List<OutputData>,
     val locktime: TxElement.Locktime
-) {
-    val numInputs: Int = inputs.size
-    val numOutputs: Int = outputs.size
-    val txid: String = doubleHashSha256(rawTx.bytes).reversedArray().toHex()
-
-    fun getScriptSig(inputNumber: Int): ByteArray {
-        return inputs[inputNumber].scriptSig.bytes
-    }
-
-    fun getScriptPubKey(outputNumber: Int): ByteArray {
-        return outputs[outputNumber].scriptPubKey.bytes
-    }
-}
+)
 
 data class InputData(
     val fullInputBytes: TxElement.FullInputBytes,
     val outPointTxid: TxElement.OutpointTxid,
     val outPointVout: TxElement.OutpointVout,
+    val scriptSigVarInt: TxElement.ScriptSigVarInt,
     val scriptSig: TxElement.ScriptSig,
     val sequence: TxElement.Sequence,
 )
@@ -85,14 +76,20 @@ data class OutputData(
 sealed class TxElement {
     class FullTx(val bytes: ByteArray): TxElement()
     class Version(val bytes: ByteArray): TxElement()
+
+    class NumInputsVarint(val bytes: ByteArray): TxElement()
     class FullInputBytes(val bytes: ByteArray): TxElement()
     class OutpointTxid(val bytes: ByteArray): TxElement()
     class OutpointVout(val bytes: ByteArray): TxElement()
+    class ScriptSigVarInt(val bytes: ByteArray): TxElement()
     class ScriptSig(val bytes: ByteArray): TxElement()
     class Sequence(val bytes: ByteArray): TxElement()
+
+    class NumOutputsVarint(val bytes: ByteArray): TxElement()
     class FullOutputBytes(val bytes: ByteArray): TxElement()
     class OutputAmount(val bytes: ByteArray): TxElement()
     class ScriptPubKey(val bytes: ByteArray): TxElement()
+
     class Locktime(val bytes: ByteArray): TxElement()
 }
 
@@ -144,6 +141,7 @@ fun parseInputs(startIndex: Int, rawTx: ByteArray): List<InputData> {
                 TxElement.FullInputBytes(fullInputBytes),
                 TxElement.OutpointTxid(outpointTxid),
                 TxElement.OutpointVout(outpointVout),
+                TxElement.ScriptSigVarInt(lengthOfScriptSigVarint.raw),
                 TxElement.ScriptSig(scriptSig),
                 TxElement.Sequence(sequence)
             )

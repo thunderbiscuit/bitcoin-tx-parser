@@ -7,7 +7,7 @@ enum class SigHash {
 fun parseSigHashByte(byte: Byte): SigHash {
     return when (byte) {
         1.toByte() -> SigHash.SIGHASH_ALL
-        else       -> throw Exception("We don't know this sighash type!")
+        else       -> throw Exception("We don't know this sighash type! (${byte.toInt()})")
     }
 }
 
