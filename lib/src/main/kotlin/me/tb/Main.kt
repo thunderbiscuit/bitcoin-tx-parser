@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 fun main() {
     // val txDataStructure: TxDataStructure = txParser(hexTx4.toByteArray())

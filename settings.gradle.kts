@@ -1,1 +1,2 @@
-rootProject.name = "bitcoin-tx-sandbox"
+rootProject.name = "bitcoin-tx-parser"
+include("lib")

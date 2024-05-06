@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 // A transaction has the following fields:
 // 1. version

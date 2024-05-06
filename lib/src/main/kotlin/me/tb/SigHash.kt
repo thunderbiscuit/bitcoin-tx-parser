@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 enum class SigHash {
     SIGHASH_ALL

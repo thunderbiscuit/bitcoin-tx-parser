@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 fun parseOpCode(byte: Byte): Opcode {
     println("Parsing OpCode: ${byte.toInt()}")

@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 import java.math.BigInteger
 import java.security.AlgorithmParameters

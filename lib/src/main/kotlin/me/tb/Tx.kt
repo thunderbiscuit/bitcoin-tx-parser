@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 import kotlinx.coroutines.runBlocking
 import java.lang.Long.parseLong

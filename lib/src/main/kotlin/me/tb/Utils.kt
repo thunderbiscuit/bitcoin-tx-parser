@@ -1,4 +1,4 @@
-package me.thunderbiscuit
+package me.tb
 
 import com.google.common.io.BaseEncoding
 import io.ktor.client.*
@@ -57,6 +57,11 @@ fun parseLocktime(bytes: ByteArray): String {
         "Locktime field: 0x${bytes.toHex()}, spendable as per Unix timestamp $value"
     }
 }
+
+// fun validateP2PKHScript(scriptSig: ScriptSigP2PKH, scriptPubKey: ByteArray, ): Boolean {
+//
+//     return false
+// }
 
 // A P2PKH ScriptSig is <sig> <pubkey>
 data class ScriptSigP2PKH(val signature: ByteArray, val sigHash: SigHash, val rawPubKey: ByteArray)
