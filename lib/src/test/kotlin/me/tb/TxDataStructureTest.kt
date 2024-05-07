@@ -3,7 +3,6 @@ package me.tb
 import me.tb.txparser.TxDataStructure
 import org.junit.jupiter.api.Nested
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 class TxDataStructureTest {
     @Nested
@@ -13,15 +12,11 @@ class TxDataStructureTest {
             val tx: TxDataStructure = TxDataStructure.fromRawTx(hexTx3.hexToUByteArray())
             println(tx.inputs)
         }
-    }
 
-    @Nested
-    inner class Failure {
         @Test
-        fun `Segwit transactions are not supported`() {
-            assertFailsWith<IllegalArgumentException> {
-                TxDataStructure.fromRawTx(hexTx4.hexToUByteArray())
-            }
+        fun `Segwit transactions are supported`() {
+            val tx = TxDataStructure.fromRawTx(hexTx5.hexToUByteArray())
+            println(tx.inputs.forEach(::println))
         }
     }
 }

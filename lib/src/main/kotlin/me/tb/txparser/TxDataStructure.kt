@@ -30,6 +30,8 @@ import me.tb.txparser.txelements.Version
 //   3b scriptPubKey
 // 4. locktime
 
+typealias Witness = List<UByteArray>
+
 class TxDataStructure(
     val rawTx: FullTx,
     val version: Version,
@@ -48,25 +50,31 @@ class TxDataStructure(
 
             val inputs: List<Input> = parseInputs(txReader)
 
-            // This is where you'd check for SegWit; the transaction would have a 0x00 byte after the version,
-            // implying 0 inputs.
+            // This is where you check for SegWit; the transaction has a 0x00 byte after the version
+            // (implying 0 inputs), we know the transaction is signalling SegWit.
             if (inputs.isEmpty()) {
-                throw IllegalArgumentException("SegWit transactions are not supported by this library")
-                // val segwitFlag: UByte = txReader.getNext(1).first()
-                // if (segwitFlag != 0x01u.toUByte()) {
-                //     throw UnsupportedSegwitFlag()
-                // }
-                // val outputs: List<Output> = parseOutputs(txReader)
-                // val locktime = Locktime(txReader.getNext(4))
-                //
-                // return TxDataStructure(
-                //     rawTx = FullTx(rawTx),
-                //     version = version,
-                //     inputs = inputs,
-                //     outputs = outputs,
-                //     locktime = locktime
-                // )
+                val segwitFlag: UByte = txReader.getNext(1).first()
+                if (segwitFlag != 0x01u.toUByte()) {
+                    throw UnsupportedSegwitFlag()
+                }
+                val tempSegwitInputs: List<Input> = parseInputs(txReader)
+                val outputs: List<Output> = parseOutputs(txReader)
+                val witnesses: List<Witness> = parseWitnesses(txReader, tempSegwitInputs.size)
+                val locktime = Locktime(txReader.getNext(4))
+
+                val segwitInputs: List<Input> = tempSegwitInputs.mapIndexed { index, input ->
+                    input.copy(witness = witnesses[index])
+                }.toList()
+
+                return TxDataStructure(
+                    rawTx = FullTx(rawTx),
+                    version = version,
+                    inputs = segwitInputs,
+                    outputs = outputs,
+                    locktime = locktime
+                )
             }
+
             val outputs: List<Output> = parseOutputs(txReader)
             val locktime = Locktime(txReader.getNext(4))
 
@@ -104,7 +112,8 @@ class TxDataStructure(
                         OutpointVout(outPointVout),
                         scriptSigVarint,
                         ScriptSig(scriptSig),
-                        Sequence(sequence)
+                        Sequence(sequence),
+                        witness = null
                     )
                 )
             }
@@ -135,6 +144,21 @@ class TxDataStructure(
             }
             return outputList
         }
+
+        private fun parseWitnesses(txReader: TxReader, numWitnesses: Int): List<Witness> {
+            val witnessesList: MutableList<List<UByteArray>> = mutableListOf()
+
+            repeat(numWitnesses) {
+                val witnessItems: MutableList<UByteArray> = mutableListOf()
+                val numWitnessItems: Int = txReader.getNextVarint().value
+                repeat(numWitnessItems) {
+                    val witnessItemLength: Int = txReader.getNextVarint().value
+                    val witnessItem = txReader.getNext(witnessItemLength)
+                    witnessItems.add(witnessItem)
+                }
+                witnessesList.add(witnessItems)
+            }
+            return witnessesList
+        }
     }
 }
-

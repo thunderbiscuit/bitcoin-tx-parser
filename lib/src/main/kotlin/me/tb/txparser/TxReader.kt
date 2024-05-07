@@ -9,7 +9,7 @@ class TxReader(private var rawTx: UByteArray) {
 
     fun getNext(length: Int): UByteArray {
         if (length > rawTx.size) {
-            throw IllegalArgumentException("Requested length exceeds remaining transaction data")
+            throw IllegalArgumentException("Requested length $length exceeds remaining transaction data ${rawTx.size}")
         }
         val data = rawTx.copyOfRange(0, length)
         rawTx = rawTx.copyOfRange(length, rawTx.size)
