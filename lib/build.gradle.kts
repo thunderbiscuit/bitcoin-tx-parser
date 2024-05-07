@@ -43,7 +43,10 @@ testing {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs = listOf("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
+        freeCompilerArgs = listOf(
+            "-Xopt-in=kotlin.ExperimentalUnsignedTypes",
+            "-Xopt-in=kotlin.ExperimentalStdlibApi",
+        )
     }
 }
 
