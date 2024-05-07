@@ -22,7 +22,7 @@ class TxReader(private var rawTx: UByteArray) {
         return varint
     }
 
-    fun remove(length: Int) {
-        rawTx = rawTx.copyOfRange(length, rawTx.size)
+    fun isEmpty(): Boolean {
+        return rawTx.isEmpty()
     }
 }

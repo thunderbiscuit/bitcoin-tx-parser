@@ -11,12 +11,12 @@ import java.nio.ByteOrder
 class Version(
     override val bytes: UByteArray
 ): TxElement {
-    val version: UInt
+    val value: UInt
 
     init {
         require(bytes.size == 4) { "Version must be 4 bytes long" }
         val buffer = ByteBuffer.wrap(bytes.toByteArray())
         buffer.order(ByteOrder.LITTLE_ENDIAN)
-        version = buffer.int.toUInt()
+        value = buffer.int.toUInt()
     }
 }

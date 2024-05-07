@@ -10,13 +10,10 @@ sealed interface TxElement {
 }
 
 class FullTx(override val bytes: UByteArray): TxElement
-class FullInputBytes(override val bytes: UByteArray): TxElement
 class OutpointTxid(override val bytes: UByteArray): TxElement
 class OutpointVout(override val bytes: UByteArray): TxElement
-class ScriptSigVarInt(override val bytes: UByteArray): TxElement
 class ScriptSig(override val bytes: UByteArray): TxElement
 class Sequence(override val bytes: UByteArray): TxElement
-class FullOutputBytes(override val bytes: UByteArray): TxElement
 class OutputAmount(override val bytes: UByteArray): TxElement
 class ScriptPubKey(override val bytes: UByteArray): TxElement
 class Locktime(override val bytes: UByteArray): TxElement

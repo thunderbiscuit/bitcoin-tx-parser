@@ -12,7 +12,7 @@ class VersionTest {
         @Test
         fun `Version 1 is correctly parsed`() {
             val version = Version("01000000".hexToUByteArray())
-            assertEquals(1u, version.version)
+            assertEquals(1u, version.value)
         }
 
         @Test
@@ -20,7 +20,7 @@ class VersionTest {
             val version = Version("ffffffff".hexToUByteArray())
             assertEquals(
                 expected = UInt.MAX_VALUE,
-                actual = version.version
+                actual = version.value
             )
         }
     }
@@ -30,7 +30,7 @@ class VersionTest {
         fun `Big-endian version 1 doesn't work`() {
             assertFalse {
                 val version = Version("00000001".hexToUByteArray())
-                version.version == 1u
+                version.value == 1u
             }
         }
     }
