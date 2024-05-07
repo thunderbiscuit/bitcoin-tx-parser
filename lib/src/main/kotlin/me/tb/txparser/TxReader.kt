@@ -2,7 +2,6 @@ package me.tb.txparser
 
 import me.tb.txparser.txelements.VarInt
 
-@OptIn(ExperimentalUnsignedTypes::class)
 class TxReader(private var rawTx: UByteArray) {
     fun get(): UByteArray {
         return rawTx

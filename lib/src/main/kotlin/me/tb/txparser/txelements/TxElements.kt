@@ -3,8 +3,6 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the ./LICENSE.txt file.
  */
 
-@file:OptIn(ExperimentalUnsignedTypes::class)
-
 package me.tb.txparser.txelements
 
 sealed interface TxElement {

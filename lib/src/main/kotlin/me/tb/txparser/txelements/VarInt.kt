@@ -9,7 +9,7 @@ import java.math.BigInteger
 
 // known bug: the max value here is kept as an Int
 // whereas the value of the varint could in fact be above the max value for Int
-@OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class)
 class VarInt(fullNineBytes: UByteArray): TxElement {
     val value: Int
     val length: Int

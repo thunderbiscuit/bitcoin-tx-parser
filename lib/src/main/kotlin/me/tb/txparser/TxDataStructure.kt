@@ -31,7 +31,6 @@ import me.tb.txparser.txelements.Version
 //   3b scriptPubKey
 // 4. locktime
 
-@OptIn(ExperimentalUnsignedTypes::class)
 class TxDataStructure(
     val rawTx: FullTx,
     val version: Version,
@@ -93,7 +92,6 @@ data class Output(
     val scriptPubKey: ScriptPubKey,
 )
 
-// @OptIn(ExperimentalUnsignedTypes::class)
 // class InputBookend(txChunk: UByteArray) {
 //     // the input is made up of:
 //     //     32 bytes outpoint txid
@@ -117,7 +115,6 @@ data class Output(
 // }
 
 // Give this function a starting point and it will parse all your inputs
-// @OptIn(ExperimentalUnsignedTypes::class)
 // fun parseInputs(txChunk: UByteArray): List<Input> {
 //     val inputList: MutableList<Input> = mutableListOf()
 //     val inputsVarint = VarInt(txChunk.toUByteArray().copyOfRange(0, 9))

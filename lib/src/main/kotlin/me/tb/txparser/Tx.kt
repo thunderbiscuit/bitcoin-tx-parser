@@ -10,7 +10,7 @@ import java.lang.Long.parseLong
 import java.math.BigInteger
 import java.security.Signature
 
-@OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class)
 class Tx(rawTx: UByteArray) {
     // private val txData: TxDataStructure = TxDataStructure.fromRawTx(rawTx)
 

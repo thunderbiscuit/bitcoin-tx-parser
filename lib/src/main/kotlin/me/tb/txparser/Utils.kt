@@ -18,7 +18,6 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import org.bouncycastle.crypto.digests.RIPEMD160Digest
 
-@OptIn(ExperimentalUnsignedTypes::class)
 fun doubleHashSha256(message: UByteArray): UByteArray {
     return MessageDigest
         .getInstance("SHA-256")
