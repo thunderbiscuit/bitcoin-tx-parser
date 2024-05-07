@@ -47,6 +47,26 @@ class TxDataStructure(
             }
 
             val inputs: List<Input> = parseInputs(txReader)
+
+            // This is where you'd check for SegWit; the transaction would have a 0x00 byte after the version,
+            // implying 0 inputs.
+            if (inputs.isEmpty()) {
+                throw IllegalArgumentException("SegWit transactions are not supported by this library")
+                // val segwitFlag: UByte = txReader.getNext(1).first()
+                // if (segwitFlag != 0x01u.toUByte()) {
+                //     throw UnsupportedSegwitFlag()
+                // }
+                // val outputs: List<Output> = parseOutputs(txReader)
+                // val locktime = Locktime(txReader.getNext(4))
+                //
+                // return TxDataStructure(
+                //     rawTx = FullTx(rawTx),
+                //     version = version,
+                //     inputs = inputs,
+                //     outputs = outputs,
+                //     locktime = locktime
+                // )
+            }
             val outputs: List<Output> = parseOutputs(txReader)
             val locktime = Locktime(txReader.getNext(4))
 
