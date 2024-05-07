@@ -11,7 +11,7 @@ repositories {
     mavenCentral()
 }
 
-group = "me.thunderbiscuit"
+group = "me.tb"
 version = "0.1.0-SNAPSHOT"
 
 dependencies {
