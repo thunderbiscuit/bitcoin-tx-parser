@@ -10,7 +10,6 @@ sealed interface TxElement {
 }
 
 class FullTx(override val bytes: UByteArray): TxElement
-class Version(override val bytes: UByteArray): TxElement
 class FullInputBytes(override val bytes: UByteArray): TxElement
 class OutpointTxid(override val bytes: UByteArray): TxElement
 class OutpointVout(override val bytes: UByteArray): TxElement
