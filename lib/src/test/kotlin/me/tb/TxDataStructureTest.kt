@@ -18,5 +18,11 @@ class TxTest {
             val tx = Tx.fromRawTx(hexTx5.hexToUByteArray())
             println(tx.inputs.forEach(::println))
         }
+
+        @Test
+        fun `Tx prints correctly`() {
+            val tx = Tx.fromRawTx(hexTx5.hexToUByteArray())
+            println(tx)
+        }
     }
 }

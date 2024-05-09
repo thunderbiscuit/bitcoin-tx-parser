@@ -36,10 +36,21 @@ class Tx(
     val rawTx: FullTx,
     val version: Version,
     val inputs: List<Input>,
-    val outputs: List<Output>? = null,
+    val outputs: List<Output>,
     val locktime: Locktime? = null,
     val segWit: Boolean
 ) {
+    override fun toString(): String {
+        return buildString {
+            append("Transaction(")
+            append("version=${version.value} ")
+            append("segWit=$segWit ")
+            append("inputs=${inputs.size} ")
+            append("outputs=${outputs.size} ")
+            append("locktime=$locktime)")
+        }
+    }
+
     companion object {
         fun fromRawTx(rawTx: UByteArray): Tx {
             val txReader = TxReader(rawTx)

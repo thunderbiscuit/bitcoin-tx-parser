@@ -10,5 +10,5 @@ data class Input(
     val scriptSigVarInt: ScriptSigVarInt,
     val scriptSig: ScriptSig,
     val sequence: Sequence,
-    val witness: Witness? = null
+    var witness: Witness? = null
 )
