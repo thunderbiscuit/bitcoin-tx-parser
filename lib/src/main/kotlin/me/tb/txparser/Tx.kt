@@ -56,10 +56,6 @@ class Tx(
             val txReader = TxReader(rawTx)
 
             val version = Version(txReader.getNext(4))
-            if (version.value != 2u) {
-                throw IllegalArgumentException("Only transactions version 2 are supported by this library")
-            }
-
             val inputs: List<Input> = parseInputs(txReader)
 
             // This is where you check for SegWit; the transaction has a 0x00 byte after the version
