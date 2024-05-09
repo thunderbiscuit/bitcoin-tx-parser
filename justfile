@@ -3,3 +3,6 @@ default:
 
 test:
   ./gradlew test
+
+publishlocal:
+  ./gradlew publishToMavenLocal
