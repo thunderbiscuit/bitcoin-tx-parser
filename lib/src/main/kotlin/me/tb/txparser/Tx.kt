@@ -37,7 +37,7 @@ class Tx(
     val version: Version,
     val inputs: List<Input>,
     val outputs: List<Output>,
-    val locktime: Locktime? = null,
+    val locktime: Locktime,
     val segWit: Boolean
 ) {
     override fun toString(): String {
@@ -72,7 +72,7 @@ class Tx(
                 val segwitInputs: List<Input> = parseInputs(txReader)
                 val outputs: List<Output> = parseOutputs(txReader)
                 val witnesses: List<Witness> = parseWitnesses(txReader, segwitInputs.size)
-                val locktime = Locktime(txReader.getNext(4))
+                val locktime = Locktime.fromRaw(txReader.getNext(4))
 
                 segwitInputs.forEachIndexed{ index, input ->
                     input.witness = witnesses[index]
@@ -89,7 +89,7 @@ class Tx(
             }
 
             val outputs: List<Output> = parseOutputs(txReader)
-            val locktime = Locktime(txReader.getNext(4))
+            val locktime = Locktime.fromRaw(txReader.getNext(4))
 
             return Tx(
                 rawTx = FullTx(rawTx),

@@ -16,4 +16,3 @@ class ScriptSig(override val bytes: UByteArray): TxElement
 class Sequence(override val bytes: UByteArray): TxElement
 class OutputAmount(override val bytes: UByteArray): TxElement
 class ScriptPubKey(override val bytes: UByteArray): TxElement
-class Locktime(override val bytes: UByteArray): TxElement
